@@ -1,0 +1,95 @@
+@page
+@model EduCenterManagement.Pages.Admin.SettingsModel
+@{
+    ViewData["Title"] = "Cấu hình Hệ thống";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-gear-fill text-primary me-2"></i>Cấu Hình Hệ Thống & Danh Mục</h2>
+        <p class="text-muted mb-0">Quản lý định mức học phí mặc định, môn học và các cơ sở phòng học</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- System Parameters -->
+    <div class="col-md-5">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-sliders text-success me-2"></i>Định Mức Học Phí Mặc Định</h5>
+            <form method="post" asp-page-handler="SaveSetting">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Học phí mặc định mỗi buổi (VNĐ)</label>
+                    <div class="input-group">
+                        <input type="number" name="TuitionPerSession" value="@Model.TuitionPerSession" class="form-control fw-bold text-success fs-5" step="10000" min="10000" required />
+                        <span class="input-group-text">VNĐ/Buổi</span>
+                    </div>
+                    <small class="text-muted">Mức học phí này được áp dụng tự động cho công thức tính của Grand Manager.</small>
+                </div>
+                <button type="submit" class="btn btn-success"><i class="bi bi-save me-1"></i> Lưu Cấu Hình Học Phí</button>
+            </form>
+
+            <hr class="my-4" />
+
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-book text-primary me-2"></i>Thêm Môn Học Mới</h5>
+            <form method="post" asp-page-handler="AddSubject" class="d-flex gap-2">
+                <input type="text" name="NewSubjectName" placeholder="Tên môn (vd: Biology)..." class="form-control" required />
+                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Thêm</button>
+            </form>
+            <div class="mt-3">
+                <label class="form-label fw-semibold">Danh sách Môn học hiện tại:</label>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var sub in Model.Subjects)
+                    {
+                        <span class="badge bg-indigo-subtle text-primary border border-primary px-3 py-2 fs-6">
+                            <i class="bi bi-journal-text me-1"></i>@sub.SubjectName
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facility & Rooms -->
+    <div class="col-md-7">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-building text-warning me-2"></i>Quản Lý Danh Mục 3 Cơ Sở & 18 Phòng Học</h5>
+            <div class="accordion" id="facilityAccordion">
+                @foreach (var fac in Model.Facilities)
+                {
+                    <div class="accordion-item mb-2 border rounded-3 overflow-hidden">
+                        <h2 class="accordion-header" id="heading-@fac.FacilityId">
+                            <button class="accordion-button fw-bold text-dark collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@fac.FacilityId">
+                                <i class="bi bi-pin-map-fill text-danger me-2"></i>@fac.FacilityName - @fac.Address (@fac.Rooms.Count phòng)
+                            </button>
+                        </h2>
+                        <div id="collapse-@fac.FacilityId" class="accordion-collapse collapse" data-bs-parent="#facilityAccordion">
+                            <div class="accordion-body bg-light">
+                                <div class="row g-2">
+                                    @foreach (var room in fac.Rooms.OrderBy(r => r.RoomNumber))
+                                    {
+                                        <div class="col-md-4">
+                                            <div class="p-2 border rounded text-center bg-white shadow-sm">
+                                                <div class="fw-bold text-primary">Phòng @room.RoomNumber</div>
+                                                <small class="text-muted">Sức chứa: @room.Capacity chỗ</small>
+                                                <div class="mt-1">
+                                                    @if (room.Condition == "Open")
+                                                    {
+                                                        <span class="badge bg-success">Hoạt động</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-danger">Bảo trì</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

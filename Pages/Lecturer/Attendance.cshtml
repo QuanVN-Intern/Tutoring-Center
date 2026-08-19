@@ -1,0 +1,117 @@
+@page
+@model EduCenterManagement.Pages.Lecturer.AttendanceModel
+@{
+    ViewData["Title"] = "Điểm danh Học viên";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-check2-square text-success me-2"></i>Điểm Danh Học Viên Theo Buổi Học</h2>
+        <p class="text-muted mb-0">Cập nhật và lưu vết lịch sử điểm danh (Present / Excused / Unexcused Absent)</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Lecturer/Schedule"><i class="bi bi-arrow-left me-1"></i> Quay về Lịch dạy</a>
+</div>
+
+<!-- Class & Date Selector -->
+<div class="glass-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label fw-semibold">Chọn Lớp Phụ Trách</label>
+            <select name="ClassId" class="form-select fw-bold" onchange="this.form.submit()">
+                @foreach (var c in Model.LecturerClasses)
+                {
+                    <option value="@c.ClassId" selected="@(Model.ClassId == c.ClassId)">@c.ClassName - @c.Subject?.SubjectName (Phòng @c.Room?.RoomNumber)</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Ngày Điểm Danh</label>
+            <input type="date" name="SessionDate" value="@Model.SessionDate.ToString("yyyy-MM-dd")" class="form-control" onchange="this.form.submit()" />
+        </div>
+        <div class="col-md-3 text-end">
+            @if (Model.CurrentSession != null)
+            {
+                <span class="badge bg-success fs-6">Buổi: @Model.CurrentSession.SessionDate.ToString("dd/MM/yyyy")</span>
+                <span class="timeline-pill ms-1">@Model.CurrentSession.Shift?.ShiftName</span>
+            }
+        </div>
+    </form>
+</div>
+
+<!-- Student Attendance List -->
+<div class="glass-card p-4">
+    @if (Model.CurrentSession == null)
+    {
+        <div class="text-center py-5 text-muted">Vui lòng chọn lớp học để thực hiện điểm danh!</div>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="SaveAttendance">
+            <input type="hidden" name="SessionId" value="@Model.CurrentSession.SessionId" />
+            <input type="hidden" name="ClassId" value="@Model.ClassId" />
+            <input type="hidden" name="SessionDate" value="@Model.SessionDate.ToString("yyyy-MM-dd")" />
+
+            <div class="table-responsive mb-4">
+                <table class="table table-hover table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">STT</th>
+                            <th style="width: 25%;">Họ và Tên Học Viên</th>
+                            <th style="width: 25%;">Email</th>
+                            <th style="width: 30%;" class="text-center">Trạng Thái Điểm Danh</th>
+                            <th style="width: 15%;">Ghi Chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Students.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Lớp học này chưa có học viên đăng ký!</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            int index = 0;
+                            foreach (var st in Model.Students)
+                            {
+                                <tr>
+                                    <td>@(index + 1)</td>
+                                    <td class="fw-bold text-dark">
+                                        @st.FullName
+                                        <input type="hidden" name="Students[@index].StudentId" value="@st.StudentId" />
+                                    </td>
+                                    <td>@st.Email</td>
+                                    <td class="text-center">
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="Students[@index].Status" id="pres-@st.StudentId" value="Present" checked="@(st.Status == "Present")">
+                                            <label class="btn btn-outline-success btn-sm" for="pres-@st.StudentId"><i class="bi bi-check-lg me-1"></i> Có Mặt</label>
+
+                                            <input type="radio" class="btn-check" name="Students[@index].Status" id="exc-@st.StudentId" value="ExcusedAbsent" checked="@(st.Status == "ExcusedAbsent")">
+                                            <label class="btn btn-outline-warning text-dark btn-sm" for="exc-@st.StudentId"><i class="bi bi-exclamation-circle me-1"></i> Vắng Có Phép</label>
+
+                                            <input type="radio" class="btn-check" name="Students[@index].Status" id="unexc-@st.StudentId" value="UnexcusedAbsent" checked="@(st.Status == "UnexcusedAbsent")">
+                                            <label class="btn btn-outline-danger btn-sm" for="unexc-@st.StudentId"><i class="bi bi-x-lg me-1"></i> Vắng Không Phép</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="text" name="Students[@index].Note" value="@st.Note" placeholder="Ghi chú..." class="form-control form-control-sm" />
+                                    </td>
+                                </tr>
+                                index++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.Students.Any())
+            {
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success btn-lg px-5 shadow">
+                        <i class="bi bi-save-fill me-2"></i> Lưu Bảng Điểm Danh
+                    </button>
+                </div>
+            }
+        </form>
+    }
+</div>

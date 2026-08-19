@@ -1,0 +1,19 @@
+@page
+@model EduCenterManagement.Pages.IndexModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-8 text-center">
+        <div class="glass-card p-5">
+            <h1 class="display-5 fw-bold text-primary mb-3">EduCenter Management System</h1>
+            <p class="lead text-secondary mb-4">Hệ thống Quản lý Trung tâm Học tập toàn diện dành cho 5 Vai trò: Admin, Grand Manager, Facility Manager, Lecturer, Student</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a class="btn btn-primary-custom btn-lg px-4" asp-page="/Login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Đăng nhập Hệ thống
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,195 @@
+@page
+@model EduCenterManagement.Pages.Admin.DashboardModel
+@{
+    ViewData["Title"] = "Bảng điều khiển Admin";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i>Bảng Điều Khiển & Thống Kê Tổng Thể</h2>
+        <p class="text-muted mb-0">Giám sát toàn bộ hoạt động, phòng học và doanh thu trên 3 cơ sở</p>
+    </div>
+    <span class="badge bg-danger fs-6 px-3 py-2">Quản trị viên System Admin</span>
+</div>
+
+<!-- 1. Top Stat Overview Widgets -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-widget primary shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-white-50 text-uppercase fw-semibold">Tổng Học Viên</small>
+                    <h2 class="fw-bold mb-0">@Model.Stats.TotalStudents</h2>
+                </div>
+                <div class="icon-box bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-widget secondary shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-white-50 text-uppercase fw-semibold">Tổng Giảng Viên</small>
+                    <h2 class="fw-bold mb-0">@Model.Stats.TotalLecturers</h2>
+                </div>
+                <div class="icon-box bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-person-workspace"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-widget success shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-white-50 text-uppercase fw-semibold">Tổng Lớp Hoạt Động</small>
+                    <h2 class="fw-bold mb-0">@Model.Stats.TotalClasses</h2>
+                </div>
+                <div class="icon-box bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-journal-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-widget warning shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-white-50 text-uppercase fw-semibold">Doanh Thu Học Phí</small>
+                    <h3 class="fw-bold mb-0">@Model.Stats.TotalSystemRevenue.ToString("N0") <small class="fs-6">VNĐ</small></h3>
+                </div>
+                <div class="icon-box bg-white bg-opacity-25 text-white">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Facility Rooms Breakdown & Shift Timeline Fill Rate -->
+<div class="row g-4 mb-4">
+    <!-- Facility Rooms -->
+    <div class="col-lg-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-building text-primary me-2"></i>Thống Kê Phòng Học Trực Thuộc 3 Cơ Sở</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>Tên Cơ Sở</th>
+                            <th class="text-center">Phòng Mở (Open)</th>
+                            <th class="text-center">Bảo Trì (Closed)</th>
+                            <th class="text-center">Tổng Số Phòng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fac in Model.Stats.FacilityRoomStats)
+                        {
+                            <tr>
+                                <td class="fw-bold text-dark">@fac.FacilityName</td>
+                                <td class="text-center">
+                                    <span class="badge bg-success-subtle text-success border border-success px-3 py-1">@fac.ActiveRooms phòng</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-1">@fac.MaintenanceRooms phòng</span>
+                                </td>
+                                <td class="text-center fw-semibold">@fac.TotalRooms phòng</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline Fill Rates -->
+    <div class="col-lg-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-secondary me-2"></i>Tỷ Lệ Lấp Đầy Phòng Theo Ca Học (Timeline)</h5>
+            <div class="d-flex flex-column gap-3">
+                @foreach (var shift in Model.Stats.ShiftFillRates)
+                {
+                    <div class="p-3 border rounded-3 bg-white shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="fw-bold text-primary fs-6 me-2">@shift.ShiftName</span>
+                                <span class="timeline-pill"><i class="bi bi-alarm me-1"></i>@shift.Timeline</span>
+                            </div>
+                            <span class="fw-bold fs-5 text-dark">@shift.FillRatePercent%</span>
+                        </div>
+                        <div class="progress" style="height: 12px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-indigo" role="progressbar" 
+                                 style="width: @shift.FillRatePercent%; background-color: #4f46e5;" 
+                                 aria-valuenow="@shift.FillRatePercent" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mt-1">
+                            <span>Đã sử dụng: <strong>@shift.OccupiedSlots</strong> phòng</span>
+                            <span>Tổng khả dụng: <strong>@shift.TotalAvailableSlots</strong> phòng</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Revenue Reports: By Subject & By Facility -->
+<div class="row g-4">
+    <!-- By Subject -->
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-book text-success me-2"></i>Báo Cáo Doanh Thu Theo Môn Học</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>Môn Học</th>
+                            <th class="text-center">Số Lớp Món</th>
+                            <th class="text-end">Doanh Thu Thu Được</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sub in Model.Stats.RevenueBySubject)
+                        {
+                            <tr>
+                                <td class="fw-bold text-dark"><i class="bi bi-journal-text me-2 text-primary"></i>@sub.SubjectName</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@sub.TotalClasses lớp</span></td>
+                                <td class="text-end fw-bold text-success">@sub.TotalRevenue.ToString("N0") VNĐ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- By Facility -->
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-geo-alt text-warning me-2"></i>Báo Cáo Doanh Thu Theo Cơ Sở</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>Tên Cơ Sở</th>
+                            <th class="text-center">Số Lớp Đang Mở</th>
+                            <th class="text-end">Tổng Doanh Thu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var fac in Model.Stats.RevenueByFacility)
+                        {
+                            <tr>
+                                <td class="fw-bold text-dark"><i class="bi bi-pin-map-fill me-2 text-danger"></i>@fac.FacilityName</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">@fac.TotalClasses lớp</span></td>
+                                <td class="text-end fw-bold text-primary">@fac.TotalRevenue.ToString("N0") VNĐ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+@page
+@model EduCenterManagement.Pages.Student.ScheduleModel
+@{
+    ViewData["Title"] = "Thời khóa biểu & Lịch sử đi học";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-calendar-week text-info me-2"></i>Thời Khóa Biểu & Lịch Sử Đi Học Thực Tế</h2>
+        <p class="text-muted mb-0">Tra cứu môn học, phòng học, cơ sở, giáo viên phụ trách và theo dõi điểm danh</p>
+    </div>
+    <span class="badge bg-info text-dark fs-6 px-3 py-2">Học viên @User.Identity?.Name</span>
+</div>
+
+<div class="row g-4 mb-4">
+    @if (!Model.EnrolledClasses.Any())
+    {
+        <div class="col-12 text-center py-5 text-muted glass-card">
+            <i class="bi bi-journal-x display-3"></i>
+            <p class="mt-2">Bạn hiện chưa đăng ký lớp học nào!</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var c in Model.EnrolledClasses)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card p-4 h-100 border-start border-4 border-info">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge bg-indigo text-white">@c.Subject?.SubjectName</span>
+                        <span class="badge bg-success-subtle text-success border border-success">Đang học</span>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-1">@c.ClassName</h4>
+                    <div class="text-muted small mb-3"><i class="bi bi-person me-1"></i>GV: <strong>@c.Lecturer?.FullName</strong></div>
+
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Cơ sở & Phòng học</small>
+                            <strong class="text-dark">@c.Facility?.FacilityName - Phòng @c.Room?.RoomNumber</strong>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted d-block">Khung giờ (Timeline)</small>
+                            <span class="timeline-pill">@c.Shift?.ShiftName (@c.Shift?.StartTime:hh\\:mm–@c.Shift?.EndTime:hh\\:mm)</span>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Lịch học tuần</small>
+                            <strong class="text-primary">Thứ @c.DaysOfWeek</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<!-- Lịch Sử Đi Học Thực Tế -->
+<div class="glass-card p-4">
+    <h4 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-primary me-2"></i>Lịch Sử Đi Học & Điểm Danh Thực Tế</h4>
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>Ngày Học</th>
+                    <th>Lớp Học</th>
+                    <th>Môn Học</th>
+                    <th>Ca Học</th>
+                    <th>Phòng</th>
+                    <th class="text-center">Trạng Thái Điểm Danh</th>
+                    <th>Ghi Chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.AttendanceHistory.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">Chưa có lịch sử điểm danh nào!</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var att in Model.AttendanceHistory)
+                    {
+                        <tr>
+                            <td class="fw-bold">@att.Session?.SessionDate.ToString("dd/MM/yyyy")</td>
+                            <td>@att.Session?.Class?.ClassName</td>
+                            <td><span class="badge bg-light text-dark border">@att.Session?.Class?.Subject?.SubjectName</span></td>
+                            <td><span class="timeline-pill">@att.Session?.Shift?.ShiftName</span></td>
+                            <td>Phòng @att.Session?.Room?.RoomNumber</td>
+                            <td class="text-center">
+                                <status-badge status="@att.Status"></status-badge>
+                            </td>
+                            <td><small class="text-muted">@(att.Note ?? "-")</small></td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

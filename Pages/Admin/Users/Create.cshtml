@@ -1,0 +1,51 @@
+@page
+@model EduCenterManagement.Pages.Admin.Users.CreateModel
+@{
+    ViewData["Title"] = "Thêm Tài Khoản Mới";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h4 class="fw-bold text-primary mb-3"><i class="bi bi-person-plus-fill me-2"></i>Thêm Tài Khoản Mới</h4>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Họ và Tên <span class="text-danger">*</span></label>
+                    <input asp-for="InputUser.FullName" class="form-control" placeholder="vd: Nguyễn Văn A" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email đăng nhập <span class="text-danger">*</span></label>
+                    <input asp-for="InputUser.Email" type="email" class="form-control" placeholder="user@educenter.local" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Mật khẩu ban đầu <span class="text-danger">*</span></label>
+                    <input asp-for="InputUser.Password" type="password" class="form-control" placeholder="Mật khẩu..." required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Số điện thoại</label>
+                    <input asp-for="InputUser.PhoneNumber" class="form-control" placeholder="0901234567" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Phân quyền Vai trò (Role) <span class="text-danger">*</span></label>
+                    <select asp-for="InputUser.RoleId" class="form-select" required>
+                        <option value="">-- Chọn Vai trò --</option>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.RoleId">@role.RoleName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a class="btn btn-outline-secondary" asp-page="/Admin/Users/Index">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary-custom">Tạo Tài Khoản</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

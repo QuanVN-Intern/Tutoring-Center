@@ -1,0 +1,63 @@
+@page
+@model EduCenterManagement.Pages.Student.TuitionModel
+@{
+    ViewData["Title"] = "Tra cứu Học phí";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-wallet2 text-success me-2"></i>Tra Cứu Thông Tin Học Phí</h2>
+        <p class="text-muted mb-0">Xem chi tiết bảng tính học phí dựa trên số buổi tham gia thực tế và hạn thanh toán</p>
+    </div>
+    <span class="badge bg-info text-dark fs-6 px-3 py-2">Học viên @User.Identity?.Name</span>
+</div>
+
+<div class="glass-card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>Lớp Học</th>
+                    <th>Cơ Sở</th>
+                    <th>Kỳ Học</th>
+                    <th class="text-center">Số Buổi Tham Gia (Present)</th>
+                    <th class="text-end">Đơn Giá/Buổi</th>
+                    <th class="text-end">Tổng Tiền Học Phí</th>
+                    <th class="text-center">Hạn Nộp</th>
+                    <th class="text-center">Trạng Thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Tuitions.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">Bạn chưa có dữ liệu học phí!</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var t in Model.Tuitions)
+                    {
+                        <tr>
+                            <td class="fw-bold text-primary">
+                                @t.Class?.ClassName
+                                <small class="d-block text-muted">@t.Class?.Subject?.SubjectName</small>
+                            </td>
+                            <td>@t.Class?.Facility?.FacilityName</td>
+                            <td><small class="text-muted">@t.PeriodFrom.ToString("dd/MM") - @t.PeriodTo.ToString("dd/MM/yyyy")</small></td>
+                            <td class="text-center">
+                                <span class="badge bg-info text-dark fs-6 px-3 py-1">@t.SessionsAttended buổi</span>
+                            </td>
+                            <td class="text-end">@t.AmountPerSession.ToString("N0") VNĐ</td>
+                            <td class="text-end fw-bold text-success fs-6">@t.TotalAmount.ToString("N0") VNĐ</td>
+                            <td class="text-center"><small class="fw-semibold text-danger">@(t.DueDate?.ToString("dd/MM/yyyy") ?? "-")</small></td>
+                            <td class="text-center">
+                                <status-badge status="@t.PaymentStatus"></status-badge>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

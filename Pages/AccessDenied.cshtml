@@ -1,0 +1,20 @@
+@page
+@model EduCenterManagement.Pages.AccessDeniedModel
+@{
+    ViewData["Title"] = "Từ chối truy cập";
+}
+
+<div class="row justify-content-center my-5">
+    <div class="col-md-6 text-center">
+        <div class="glass-card p-5 border-danger border-2">
+            <div class="text-danger mb-3">
+                <i class="bi bi-shield-lock-fill display-1"></i>
+            </div>
+            <h2 class="fw-bold text-danger mb-2">Từ Chối Truy Cập (403 Forbidden)</h2>
+            <p class="text-muted mb-4">Bạn không có quyền truy cập vào chức năng hoặc trang này trên hệ thống. Vui lòng đăng nhập với tài khoản có vai trò phù hợp.</p>
+            <a class="btn btn-outline-danger px-4" asp-page="/Index">
+                <i class="bi bi-house-door-fill me-1"></i> Quay về Trang chủ
+            </a>
+        </div>
+    </div>
+</div>

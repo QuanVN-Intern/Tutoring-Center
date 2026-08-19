@@ -1,0 +1,126 @@
+@page
+@model EduCenterManagement.Pages.GrandManager.ClassesModel
+@{
+    ViewData["Title"] = "Quản lý Lớp học & Môn học";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-journal-bookmark text-primary me-2"></i>Quản Lý Lớp Học & Môn Học</h2>
+        <p class="text-muted mb-0">Tạo mới lớp học, phân công Giảng viên, lịch học, phòng học và cơ sở</p>
+    </div>
+    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#createClassModal">
+        <i class="bi bi-plus-circle-fill me-1"></i> Tạo Lớp Học Mới
+    </button>
+</div>
+
+<div class="glass-card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>Tên Lớp</th>
+                    <th>Môn Học</th>
+                    <th>Giảng Viên Phụ Trách</th>
+                    <th>Cơ Sở & Phòng</th>
+                    <th>Ca Học (Timeline)</th>
+                    <th>Thứ Trong Tuần</th>
+                    <th class="text-center">Số Học Viên</th>
+                    <th class="text-center">Trạng Thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Classes)
+                {
+                    <tr>
+                        <td class="fw-bold text-primary">@c.ClassName</td>
+                        <td><span class="badge bg-indigo text-white">@c.Subject?.SubjectName</span></td>
+                        <td class="fw-semibold">@c.Lecturer?.FullName</td>
+                        <td>@c.Facility?.FacilityName - <strong>Phòng @c.Room?.RoomNumber</strong></td>
+                        <td><span class="timeline-pill">@c.Shift?.ShiftName (@c.Shift?.StartTime:hh\\:mm–@c.Shift?.EndTime:hh\\:mm)</span></td>
+                        <td>Thứ @c.DaysOfWeek</td>
+                        <td class="text-center"><span class="badge bg-info text-dark fs-6">@c.Enrollments.Count(e => e.Status == "Active") học viên</span></td>
+                        <td class="text-center">
+                            <status-badge status="@c.Status"></status-badge>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tạo Lớp Học Mới -->
+<div class="modal fade" id="createClassModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-header-title fw-bold"><i class="bi bi-journal-plus me-2"></i>Tạo Lớp Học Mới & Phân Công Giảng Dạy</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="CreateClass">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Tên Lớp Học <span class="text-danger">*</span></label>
+                            <input type="text" name="ClassName" placeholder="vd: MATH-K12-02..." class="form-control" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Môn Học <span class="text-danger">*</span></label>
+                            <select name="SubjectId" class="form-select" required>
+                                @foreach (var sub in Model.Subjects)
+                                {
+                                    <option value="@sub.SubjectId">@sub.SubjectName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phân Công Giảng Viên <span class="text-danger">*</span></label>
+                            <select name="LecturerId" class="form-select" required>
+                                @foreach (var lec in Model.Lecturers)
+                                {
+                                    <option value="@lec.UserId">@lec.FullName (@lec.Email)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Cơ Sở Học <span class="text-danger">*</span></label>
+                            <select name="FacilityId" class="form-select" required>
+                                @foreach (var fac in Model.Facilities)
+                                {
+                                    <option value="@fac.FacilityId">@fac.FacilityName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Phòng Học <span class="text-danger">*</span></label>
+                            <select name="RoomId" class="form-select" required>
+                                @foreach (var room in Model.Rooms)
+                                {
+                                    <option value="@room.RoomId">Phòng @room.RoomNumber (@room.Facility?.FacilityName)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Ca Học <span class="text-danger">*</span></label>
+                            <select name="ShiftId" class="form-select" required>
+                                @foreach (var s in Model.Shifts)
+                                {
+                                    <option value="@s.ShiftId">@s.ShiftName (@s.StartTime:hh\\:mm - @s.EndTime:hh\\:mm)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Thứ Trong Tuần <span class="text-danger">*</span></label>
+                            <input type="text" name="DaysOfWeek" placeholder="vd: 2,4,6" class="form-control" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary-custom">Tạo Lớp Học</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

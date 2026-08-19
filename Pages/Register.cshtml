@@ -1,0 +1,92 @@
+@page
+@model EduCenterManagement.Pages.RegisterModel
+@{
+    ViewData["Title"] = "Đăng ký Tài khoản Mới";
+}
+
+<div class="row justify-content-center align-items-center my-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="glass-card p-4 p-md-5 shadow-lg border-0">
+            <div class="text-center mb-4">
+                <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 64px; height: 64px;">
+                    <i class="bi bi-person-plus-fill fs-2"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">Đăng Ký Tài Khoản</h3>
+                <p class="text-muted small">Tạo tài khoản mới trên Hệ thống EduCenter Management</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger py-2 small" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> @Model.ErrorMessage
+                </div>
+            }
+
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-secondary">Họ và Tên <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                        <input asp-for="Input.FullName" class="form-control" placeholder="vd: Nguyễn Văn A..." required />
+                    </div>
+                    <span asp-validation-for="Input.FullName" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-secondary">Email <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                        <input asp-for="Input.Email" type="email" class="form-control" placeholder="email@example.com..." required />
+                    </div>
+                    <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-secondary">Số điện thoại</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="0901234567..." />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-secondary">Bạn muốn đăng ký là <span class="text-danger">*</span></label>
+                    <select asp-for="Input.RoleId" class="form-select fw-semibold" required>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.RoleId">@role.RoleName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-secondary">Mật khẩu <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                            <input asp-for="Input.Password" type="password" class="form-control" placeholder="Mật khẩu..." required />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-secondary">Xác nhận <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-shield-check"></i></span>
+                            <input asp-for="Input.ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại..." required />
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-2 fs-6 mb-3 shadow-sm">
+                    <i class="bi bi-check-circle-fill me-1"></i> Hoàn Tất Đăng Ký
+                </button>
+            </form>
+
+            <div class="text-center pt-3 border-top">
+                <span class="text-muted small">Đã có tài khoản? </span>
+                <a class="fw-bold text-primary text-decoration-none" asp-page="/Login">
+                    Đăng nhập ngay <i class="bi bi-arrow-right-short"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

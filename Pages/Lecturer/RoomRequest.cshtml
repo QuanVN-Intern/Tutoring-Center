@@ -1,0 +1,112 @@
+@page
+@model EduCenterManagement.Pages.Lecturer.RoomRequestModel
+@{
+    ViewData["Title"] = "Đăng ký Đổi phòng học / Ca dạy";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-send text-primary me-2"></i>Gửi Yêu Cầu Thay Đổi Phòng Học & Ca Dạy</h2>
+        <p class="text-muted mb-0">Gửi đơn đăng ký đổi phòng hoặc khung giờ trực tiếp tới Facility Manager trên hệ thống</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Lecturer/Schedule"><i class="bi bi-arrow-left me-1"></i> Quay về Lịch dạy</a>
+</div>
+
+<div class="row g-4">
+    <!-- Form Gửi Yêu Cầu -->
+    <div class="col-md-5">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-pencil-square text-primary me-2"></i>Tạo Đơn Đăng Ký Mới</h5>
+            <form method="post" asp-page-handler="SubmitRequest">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Chọn Lớp Cần Đổi <span class="text-danger">*</span></label>
+                    <select name="ClassId" class="form-select" required>
+                        @foreach (var c in Model.LecturerClasses)
+                        {
+                            <option value="@c.ClassId" selected="@(Model.ClassId == c.ClassId)">@c.ClassName - @c.Subject?.SubjectName (Hiện tại: Phòng @c.Room?.RoomNumber, Ca @c.Shift?.ShiftName)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Phòng Học Đề Xuất <span class="text-danger">*</span></label>
+                    <select name="RequestedRoomId" class="form-select" required>
+                        @foreach (var room in Model.AvailableRooms)
+                        {
+                            <option value="@room.RoomId">Phòng @room.RoomNumber (@room.Facility?.FacilityName)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Ca Học Đề Xuất <span class="text-danger">*</span></label>
+                    <select name="RequestedShiftId" class="form-select" required>
+                        @foreach (var s in Model.Shifts)
+                        {
+                            <option value="@s.ShiftId">@s.ShiftName (@s.StartTime:hh\\:mm - @s.EndTime:hh\\:mm)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Lý Do Đổi Phòng / Ca <span class="text-danger">*</span></label>
+                    <textarea name="Reason" rows="3" class="form-control" placeholder="vd: Phòng hiện tại hỏng thiết bị, cần máy chiếu..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                    <i class="bi bi-send-fill me-1"></i> Gửi Yêu Cầu Tới Facility Manager
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lịch Sử Yêu Cầu Đã Gửi -->
+    <div class="col-md-7">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-secondary me-2"></i>Lịch Sử Yêu Cầu Đã Gửi</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã Đơn</th>
+                            <th>Lớp Học</th>
+                            <th>Đề Xuất Đổi</th>
+                            <th>Lý Do</th>
+                            <th class="text-center">Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.MyRequests.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Bạn chưa gửi yêu cầu đổi phòng nào!</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var req in Model.MyRequests)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-primary">#@req.RequestId</td>
+                                    <td>@req.Class?.ClassName</td>
+                                    <td>
+                                        <small class="d-block text-muted">Từ: Phòng @req.CurrentRoom?.RoomNumber, Ca @req.CurrentShift?.ShiftName</small>
+                                        <strong class="text-success">Thành: Phòng @req.RequestedRoom?.RoomNumber, Ca @req.RequestedShift?.ShiftName</strong>
+                                    </td>
+                                    <td><small class="text-muted">@req.Reason</small></td>
+                                    <td class="text-center">
+                                        <status-badge status="@req.Status"></status-badge>
+                                        @if (!string.IsNullOrEmpty(req.ReviewNote))
+                                        {
+                                            <small class="d-block text-muted mt-1">Note: @req.ReviewNote</small>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

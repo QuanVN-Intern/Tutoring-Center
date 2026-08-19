@@ -1,0 +1,54 @@
+@model EduCenterManagement.Models.Tuition
+
+@if (Model != null)
+{
+    var latestPayment = Model.Payments.OrderByDescending(p => p.PaymentDate).FirstOrDefault();
+    
+    <div class="receipt-box text-start my-4">
+        <div class="text-center mb-4 border-bottom pb-3">
+            <h4 class="text-uppercase fw-bold text-primary mb-1">BIÊN LAI THU HỌC PHÍ</h4>
+            <div class="text-muted small">Trung Tâm Học Tập EduCenter</div>
+            <div class="badge bg-dark mt-2 fs-6">Mã biên lai: @(latestPayment?.ReceiptNumber ?? "N/A")</div>
+        </div>
+
+        <div class="row g-3 fs-6">
+            <div class="col-md-6">
+                <strong>Học viên:</strong> @(Model.Student?.FullName)
+            </div>
+            <div class="col-md-6">
+                <strong>Email:</strong> @(Model.Student?.Email)
+            </div>
+            <div class="col-md-6">
+                <strong>Lớp học:</strong> @(Model.Class?.ClassName) (@(Model.Class?.Subject?.SubjectName))
+            </div>
+            <div class="col-md-6">
+                <strong>Cơ sở:</strong> @(Model.Class?.Facility?.FacilityName)
+            </div>
+            <div class="col-md-6">
+                <strong>Kỳ học:</strong> @Model.PeriodFrom.ToString("dd/MM/yyyy") - @Model.PeriodTo.ToString("dd/MM/yyyy")
+            </div>
+            <div class="col-md-6">
+                <strong>Số buổi có mặt:</strong> <span class="badge bg-info text-dark">@Model.SessionsAttended buổi</span>
+            </div>
+            <div class="col-md-6">
+                <strong>Đơn giá/buổi:</strong> @Model.AmountPerSession.ToString("N0") VNĐ
+            </div>
+            <div class="col-md-6">
+                <strong>Tổng tiền:</strong> <span class="fw-bold text-success fs-5">@Model.TotalAmount.ToString("N0") VNĐ</span>
+            </div>
+            <div class="col-md-6">
+                <strong>Hình thức:</strong> @(latestPayment?.PaymentMethod ?? "Tiền mặt")
+            </div>
+            <div class="col-md-6">
+                <strong>Ngày nộp:</strong> @(latestPayment?.PaymentDate.ToString("dd/MM/yyyy HH:mm") ?? DateTime.Now.ToString("dd/MM/yyyy HH:mm"))
+            </div>
+            <div class="col-md-12">
+                <strong>Người thu tiền:</strong> @(latestPayment?.Receiver?.FullName ?? "Grand Manager")
+            </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-top text-center text-muted small">
+            <em>Cảm ơn quý phụ huynh và học viên đã đồng hành cùng EduCenter!</em>
+        </div>
+    </div>
+}

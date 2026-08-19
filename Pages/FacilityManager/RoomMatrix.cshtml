@@ -1,0 +1,123 @@
+@page
+@model EduCenterManagement.Pages.FacilityManager.RoomMatrixModel
+@{
+    ViewData["Title"] = "Ma trận Trạng thái Phòng học";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-grid-3x3-gap-fill text-indigo me-2"></i>Ma Trận Giám Sát Trạng Thái Phòng Học</h2>
+        <p class="text-muted mb-0">Giám sát trạng thái 6 phòng/cơ sở theo từng ca học: Available (Trống) / Occupied (Đang dùng) & Bảo trì</p>
+    </div>
+    <span class="badge bg-indigo text-white fs-6 px-3 py-2">Facility Manager</span>
+</div>
+
+<!-- Controls -->
+<div class="glass-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-center">
+        <div class="col-md-5">
+            <label class="form-label fw-semibold">Chọn Cơ Sở Giám Sát</label>
+            <select name="FacilityId" class="form-select fw-bold" onchange="this.form.submit()">
+                @foreach (var fac in Model.Facilities)
+                {
+                    <option value="@fac.FacilityId" selected="@(Model.FacilityId == fac.FacilityId)">@fac.FacilityName - @fac.Address</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Ngày Giám Sát</label>
+            <input type="date" name="TargetDate" value="@Model.TargetDate.ToString("yyyy-MM-dd")" class="form-control" onchange="this.form.submit()" />
+        </div>
+        <div class="col-md-3 text-end pt-4">
+            <span class="badge bg-success me-1">Available: Trống</span>
+            <span class="badge bg-primary me-1">Occupied: Đang học</span>
+            <span class="badge bg-danger">Closed: Bảo trì</span>
+        </div>
+    </form>
+</div>
+
+<!-- Room Status Matrix Grid Table -->
+<div class="glass-card p-4">
+    <h4 class="fw-bold text-dark mb-4 text-center">Ma Trận Phòng Học - @Model.MatrixData.FacilityName (Ngày @Model.TargetDate.ToString("dd/MM/yyyy"))</h4>
+
+    <div class="table-responsive">
+        <table class="table align-middle border text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 15%;">Phòng Học / Ca</th>
+                    @foreach (var shift in Model.MatrixData.Shifts)
+                    {
+                        <th style="width: 28%;">
+                            <div>@shift.ShiftName</div>
+                            <small class="fw-normal text-white-50">(@shift.StartTime:hh\\:mm–@shift.EndTime:hh\\:mm)</small>
+                        </th>
+                    }
+                    <th style="width: 15%;">Trạng Thái Bảo Trì</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var room in Model.MatrixData.Rooms)
+                {
+                    <tr>
+                        <td class="fw-bold fs-5 bg-light">
+                            <i class="bi bi-door-open-fill text-primary me-1"></i>Phòng @room.RoomNumber
+                            <div class="small fw-normal text-muted">Sức chứa: @room.Capacity chỗ</div>
+                        </td>
+
+                        @foreach (var shift in Model.MatrixData.Shifts)
+                        {
+                            var slot = Model.MatrixData.Slots.FirstOrDefault(s => s.RoomId == room.RoomId && s.ShiftId == shift.ShiftId);
+
+                            <td>
+                                @if (slot != null && slot.IsOccupied)
+                                {
+                                    @if (slot.Condition == "Closed")
+                                    {
+                                        <div class="room-slot-card maintenance shadow-sm">
+                                            <i class="bi bi-cone-striped fs-3 d-block mb-1"></i>
+                                            <span class="fw-bold">ĐANG BẢO TRÌ</span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="room-slot-card occupied shadow-sm">
+                                            <span class="badge bg-primary mb-1">ĐANG SỬ DỤNG</span>
+                                            <div class="fw-bold text-dark fs-6">@slot.ClassName</div>
+                                            <div class="small text-muted"><i class="bi bi-book me-1"></i>@slot.SubjectName</div>
+                                            <div class="small text-secondary"><i class="bi bi-person me-1"></i>@slot.LecturerName</div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="room-slot-card available shadow-sm">
+                                        <i class="bi bi-check-circle-fill fs-3 text-success d-block mb-1"></i>
+                                        <span class="fw-bold text-success">TRỐNG (Available)</span>
+                                        <div class="small text-muted">Sẵn sàng phân bổ</div>
+                                    </div>
+                                }
+                            </td>
+                        }
+
+                        <td class="bg-light">
+                            <form method="post" asp-page-handler="ToggleCondition" asp-route-roomId="@room.RoomId" asp-route-facilityId="@Model.FacilityId">
+                                @if (room.Condition == "Open")
+                                {
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Chuyển phòng @room.RoomNumber sang trạng thái BẢO TRÌ?')">
+                                        <i class="bi bi-wrench-adjustable me-1"></i> Đóng Bảo Trì
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-sm btn-outline-success w-100" onclick="return confirm('Mở cửa hoạt động lại phòng @room.RoomNumber?')">
+                                        <i class="bi bi-door-open me-1"></i> Mở Hoạt Động
+                                    </button>
+                                }
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

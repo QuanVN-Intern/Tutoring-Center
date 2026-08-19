@@ -1,0 +1,96 @@
+@page
+@model EduCenterManagement.Pages.Admin.Users.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Tài khoản Hệ thống";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-people-fill text-primary me-2"></i>Quản Lý Tài Khoản Toàn Hệ Thống</h2>
+        <p class="text-muted mb-0">Thêm mới, chỉnh sửa, phân quyền, khóa hoặc kích hoạt tài khoản người dùng</p>
+    </div>
+    <a class="btn btn-primary-custom" asp-page="/Admin/Users/Create">
+        <i class="bi bi-person-plus-fill me-1"></i> Thêm Tài Khoản Mới
+    </a>
+</div>
+
+<div class="glass-card p-4">
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Tìm kiếm tên, email, SĐT..." />
+                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+            </form>
+        </div>
+        <div class="col-md-3">
+            <form method="get">
+                <select name="RoleId" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Tất cả Vai trò --</option>
+                    @foreach (var role in Model.Roles)
+                    {
+                        <option value="@role.RoleId" selected="@(Model.RoleId == role.RoleId)">@role.RoleName</option>
+                    }
+                </select>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Họ và Tên</th>
+                    <th>Email</th>
+                    <th>Số Điện Thoại</th>
+                    <th>Vai Trò (Role)</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th class="text-end">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.UserList.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">Không tìm thấy tài khoản phù hợp!</td>
+                    </tr>
+                }
+                else
+                {
+                    int index = 1;
+                    @foreach (var u in Model.UserList)
+                    {
+                        <tr>
+                            <td>@(index++)</td>
+                            <td class="fw-bold text-dark">@u.FullName</td>
+                            <td>@u.Email</td>
+                            <td>@(u.PhoneNumber ?? "-")</td>
+                            <td><span class="role-badge @u.Role?.RoleName.ToLower()">@u.Role?.RoleName</span></td>
+                            <td class="text-center">
+                                @if (u.IsActive)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success px-3 py-1"><i class="bi bi-check-circle me-1"></i>Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-1"><i class="bi bi-lock me-1"></i>Bị khóa</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary me-1" asp-page="/Admin/Users/Edit" asp-route-id="@u.UserId" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form method="post" asp-page-handler="ToggleLock" asp-route-id="@u.UserId" class="d-inline">
+                                    <button type="submit" class="btn btn-sm @(u.IsActive ? "btn-outline-warning text-dark" : "btn-outline-success")" 
+                                            onclick="return confirm('Bạn có chắc muốn @(u.IsActive ? "Khóa" : "Kích hoạt") tài khoản này?')" title="@(u.IsActive ? "Khóa tài khoản" : "Kích hoạt")">
+                                        <i class="bi @(u.IsActive ? "bi-lock-fill" : "bi-unlock-fill")"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

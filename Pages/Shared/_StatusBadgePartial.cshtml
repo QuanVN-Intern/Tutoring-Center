@@ -1,0 +1,7 @@
+@model string
+
+@{
+    var status = Model ?? "Unknown";
+}
+
+<status-badge status="@status"></status-badge>

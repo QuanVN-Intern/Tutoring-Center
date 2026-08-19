@@ -1,0 +1,71 @@
+@page
+@model EduCenterManagement.Pages.GrandManager.StaffStudentsModel
+@{
+    ViewData["Title"] = "Quản lý Nhân sự & Học viên";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-person-badge text-warning me-2"></i>Quản Lý Nhân Sự & Học Viên</h2>
+        <p class="text-muted mb-0">Quản lý danh sách Facility Manager, Lecturer và Student trên toàn hệ thống</p>
+    </div>
+    <span class="badge bg-warning text-dark fs-6 px-3 py-2">Grand Manager</span>
+</div>
+
+<div class="glass-card p-4">
+    <!-- Filter Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2">
+        <li class="nav-item">
+            <a class="nav-link @(Model.SelectedRole == null ? "active bg-primary" : "bg-light text-dark")" asp-page="/GrandManager/StaffStudents">Tất cả</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.SelectedRole == "FacilityManager" ? "active bg-primary" : "bg-light text-dark")" asp-page="/GrandManager/StaffStudents" asp-route-role="FacilityManager">Facility Managers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.SelectedRole == "Lecturer" ? "active bg-primary" : "bg-light text-dark")" asp-page="/GrandManager/StaffStudents" asp-route-role="Lecturer">Giảng viên (Lecturers)</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.SelectedRole == "Student" ? "active bg-primary" : "bg-light text-dark")" asp-page="/GrandManager/StaffStudents" asp-route-role="Student">Học viên (Students)</a>
+        </li>
+    </ul>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Họ và Tên</th>
+                    <th>Email</th>
+                    <th>Số Điện Thoại</th>
+                    <th>Vai Trò</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th class="text-end">Ngày Tạo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int index = 1; }
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td>@(index++)</td>
+                        <td class="fw-bold text-dark">@user.FullName</td>
+                        <td>@user.Email</td>
+                        <td>@(user.PhoneNumber ?? "-")</td>
+                        <td><span class="role-badge @user.Role?.RoleName.ToLower()">@user.Role?.RoleName</span></td>
+                        <td class="text-center">
+                            @if (user.IsActive)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success px-3 py-1">Hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger-subtle text-danger border border-danger px-3 py-1">Khóa</span>
+                            }
+                        </td>
+                        <td class="text-end text-muted small">@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

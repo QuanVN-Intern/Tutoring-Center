@@ -1,0 +1,57 @@
+@page "{id:int}"
+@model EduCenterManagement.Pages.Admin.Users.EditModel
+@{
+    ViewData["Title"] = "Chỉnh sửa Tài khoản";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h4 class="fw-bold text-primary mb-3"><i class="bi bi-pencil-square me-2"></i>Chỉnh Sửa Thông Tin Tài Khoản</h4>
+
+            <form method="post">
+                <input type="hidden" asp-for="InputUser.UserId" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Họ và Tên <span class="text-danger">*</span></label>
+                    <input asp-for="InputUser.FullName" class="form-control" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email đăng nhập</label>
+                    <input asp-for="InputUser.Email" class="form-control bg-light" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Mật khẩu mới (Để trống nếu không muốn đổi)</label>
+                    <input asp-for="InputUser.NewPassword" type="password" class="form-control" placeholder="Mật khẩu mới..." />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Số điện thoại</label>
+                    <input asp-for="InputUser.PhoneNumber" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Vai Trò (Role) <span class="text-danger">*</span></label>
+                    <select asp-for="InputUser.RoleId" class="form-select" required>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.RoleId">@role.RoleName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-4 form-check form-switch">
+                    <input asp-for="InputUser.IsActive" class="form-check-input" type="checkbox" role="switch" id="activeSwitch">
+                    <label class="form-check-label fw-semibold" for="activeSwitch">Kích hoạt tài khoản</label>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a class="btn btn-outline-secondary" asp-page="/Admin/Users/Index">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary-custom">Lưu Thay Đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

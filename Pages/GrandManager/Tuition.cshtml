@@ -1,0 +1,213 @@
+@page
+@model EduCenterManagement.Pages.GrandManager.TuitionModel
+@{
+    ViewData["Title"] = "Tính toán & Quản lý Học phí";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-cash-stack text-success me-2"></i>Tính Toán & Quản Lý Học Phí</h2>
+        <p class="text-muted mb-0">Tự động tổng hợp số buổi điểm danh, tính học phí và thu nộp biên lai</p>
+    </div>
+    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#calcTuitionModal">
+        <i class="bi bi-calculator-fill me-1"></i> Tính Học Phí Tự Động Cho Lớp
+    </button>
+</div>
+
+<!-- Controls & Filters -->
+<div class="glass-card p-4 mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Lọc theo Cơ sở</label>
+            <select name="FacilityId" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Tất cả Cơ sở --</option>
+                @foreach (var f in Model.Facilities)
+                {
+                    <option value="@f.FacilityId" selected="@(Model.FacilityId == f.FacilityId)">@f.FacilityName</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Trạng thái Thanh toán</label>
+            <select name="PaymentStatus" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Tất cả Trạng thái --</option>
+                <option value="Paid" selected="@(Model.PaymentStatus == "Paid")">Đã Nộp (Paid)</option>
+                <option value="Unpaid" selected="@(Model.PaymentStatus == "Unpaid")">Chưa Nộp (Unpaid)</option>
+            </select>
+        </div>
+        <div class="col-md-4 text-end">
+            <span class="fw-bold text-muted me-2">Tổng Công Nợ Chưa Nộp:</span>
+            <span class="fs-4 fw-bold text-danger">@Model.TotalUnpaidAmount.ToString("N0") VNĐ</span>
+        </div>
+    </form>
+</div>
+
+<!-- Tuition Report Table -->
+<div class="glass-card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>Học Viên</th>
+                    <th>Lớp Học</th>
+                    <th>Cơ Sở</th>
+                    <th>Kỳ Học</th>
+                    <th class="text-center">Buổi Có Mặt</th>
+                    <th class="text-end">Đơn Giá/Buổi</th>
+                    <th class="text-end">Tổng Học Phí</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th class="text-end">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Tuitions.Any())
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">Chưa có dữ liệu học phí phù hợp!</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var t in Model.Tuitions)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">@t.Student?.FullName</div>
+                                <small class="text-muted">@t.Student?.Email</small>
+                            </td>
+                            <td>
+                                <span class="fw-semibold text-primary">@t.Class?.ClassName</span>
+                                <small class="d-block text-muted">@t.Class?.Subject?.SubjectName</small>
+                            </td>
+                            <td>@t.Class?.Facility?.FacilityName</td>
+                            <td>
+                                <small class="text-muted">@t.PeriodFrom.ToString("dd/MM") - @t.PeriodTo.ToString("dd/MM/yyyy")</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info-subtle text-info-emphasis border border-info px-3 py-1 fs-6">@t.SessionsAttended buổi</span>
+                            </td>
+                            <td class="text-end">@t.AmountPerSession.ToString("N0") VNĐ</td>
+                            <td class="text-end fw-bold text-success fs-6">@t.TotalAmount.ToString("N0") VNĐ</td>
+                            <td class="text-center">
+                                <status-badge status="@t.PaymentStatus"></status-badge>
+                            </td>
+                            <td class="text-end">
+                                @if (t.PaymentStatus == "Unpaid")
+                                {
+                                    <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#payModal-@t.TuitionId">
+                                        <i class="bi bi-credit-card me-1"></i> Thu Học Phí
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-sm btn-outline-primary" asp-page="/GrandManager/Tuition" asp-page-handler="ViewReceipt" asp-route-id="@t.TuitionId">
+                                        <i class="bi bi-receipt me-1"></i> Xem Biên Lai
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+
+                        <!-- Modal Thu Học Phí -->
+                        <div class="modal fade" id="payModal-@t.TuitionId" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content glass-card border-0">
+                                    <div class="modal-header bg-success text-white">
+                                        <h5 class="modal-header-title fw-bold"><i class="bi bi-cash-coin me-2"></i>Ghi Nhận Thu Học Phí</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="post" asp-page-handler="RecordPayment">
+                                        <input type="hidden" name="TuitionId" value="@t.TuitionId" />
+                                        <div class="modal-body p-4 text-start">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted">Học viên:</label>
+                                                <div class="fw-bold fs-5">@t.Student?.FullName</div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted">Số tiền cần thu (VNĐ):</label>
+                                                <input type="number" name="AmountPaid" value="@t.TotalAmount" class="form-control fw-bold text-success fs-5" readonly />
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Hình thức thanh toán</label>
+                                                <select name="PaymentMethod" class="form-select" required>
+                                                    <option value="Chuyển khoản (Bank Transfer)">Chuyển khoản (Bank Transfer)</option>
+                                                    <option value="Tiền mặt (Cash)">Tiền mặt (Cash)</option>
+                                                    <option value="Ví điện tử (E-Wallet)">Ví điện tử (E-Wallet)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer bg-light">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                            <button type="submit" class="btn btn-success"><i class="bi bi-check-circle me-1"></i> Xác Nhận Thu & Xuất Biên Lai</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Render Receipt Preview Modal if requested -->
+@if (Model.ReceiptTuitionDetail != null)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content glass-card border-0">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-header-title fw-bold"><i class="bi bi-printer me-2"></i>Biên Lai Thanh Toán Mẫu</h5>
+                    <a class="btn-close btn-close-white" asp-page="/GrandManager/Tuition"></a>
+                </div>
+                <div class="modal-body p-4">
+                    <partial name="_ReceiptPartial" model="Model.ReceiptTuitionDetail" />
+                </div>
+                <div class="modal-footer bg-light">
+                    <button class="btn btn-outline-primary" onclick="window.print()"><i class="bi bi-printer-fill me-1"></i> In Biên Lai</button>
+                    <a class="btn btn-secondary" asp-page="/GrandManager/Tuition">Đóng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal Tính Học Phí Tự Động -->
+<div class="modal fade" id="calcTuitionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-header-title fw-bold"><i class="bi bi-calculator me-2"></i>Tự Động Tính Học Phí Cho Lớp</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="CalculateTuition">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Chọn Lớp Học <span class="text-danger">*</span></label>
+                        <select name="ClassId" class="form-select" required>
+                            @foreach (var c in Model.Classes)
+                            {
+                                <option value="@c.ClassId">@c.ClassName - @c.Subject?.SubjectName (@c.Facility?.FacilityName)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Từ ngày <span class="text-danger">*</span></label>
+                        <input type="date" name="PeriodFrom" value="@DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd")" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Đến ngày <span class="text-danger">*</span></label>
+                        <input type="date" name="PeriodTo" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="form-control" required />
+                    </div>
+                    <div class="alert alert-info py-2 small mb-0">
+                        <i class="bi bi-info-circle me-1"></i> Hệ thống sẽ tự động đếm số buổi <strong>"Present"</strong> của học viên trong khoảng thời gian trên và nhân với định mức <strong>200.000 VNĐ/buổi</strong>.
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary-custom">Tính Học Phí</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

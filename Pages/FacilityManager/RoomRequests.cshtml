@@ -1,0 +1,131 @@
+@page
+@model EduCenterManagement.Pages.FacilityManager.RoomRequestsModel
+@{
+    ViewData["Title"] = "Yêu cầu Đổi phòng & Ca học";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1"><i class="bi bi-arrow-left-right text-primary me-2"></i>Yêu Cầu Đổi Phòng & Ca Học Từ Giảng Viên</h2>
+        <p class="text-muted mb-0">Tiếp nhận, thẩm định và phê duyệt hoặc từ chối đơn yêu cầu từ Giảng viên</p>
+    </div>
+    <span class="badge bg-indigo text-white fs-6 px-3 py-2">Facility Manager</span>
+</div>
+
+<div class="glass-card p-4">
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>Mã Đơn</th>
+                    <th>Giảng Viên Gửi</th>
+                    <th>Lớp Học</th>
+                    <th>Phòng & Ca Hiện Tại</th>
+                    <th>Phòng & Ca Đề Xuất</th>
+                    <th>Lý Do</th>
+                    <th class="text-center">Trạng Thái</th>
+                    <th class="text-end">Phê Duyệt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Requests.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">Chưa có yêu cầu đổi phòng nào!</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var req in Model.Requests)
+                    {
+                        <tr>
+                            <td class="fw-bold text-primary">#@req.RequestId</td>
+                            <td>
+                                <div class="fw-semibold">@req.Lecturer?.FullName</div>
+                                <small class="text-muted">@req.Lecturer?.Email</small>
+                            </td>
+                            <td>@req.Class?.ClassName</td>
+                            <td>Phòng @req.CurrentRoom?.RoomNumber - Ca @req.CurrentShift?.ShiftName</td>
+                            <td class="fw-bold text-success">
+                                Phòng @(req.RequestedRoom?.RoomNumber ?? "Không đổi") - Ca @(req.RequestedShift?.ShiftName ?? "Không đổi")
+                            </td>
+                            <td><small class="text-muted">@req.Reason</small></td>
+                            <td class="text-center">
+                                <status-badge status="@req.Status"></status-badge>
+                            </td>
+                            <td class="text-end">
+                                @if (req.Status == "Pending")
+                                {
+                                    <button class="btn btn-sm btn-success me-1" data-bs-toggle="modal" data-bs-target="#approveModal-@req.RequestId">
+                                        <i class="bi bi-check-circle"></i> Duyệt
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal-@req.RequestId">
+                                        <i class="bi bi-x-circle"></i> Từ chối
+                                    </button>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">@req.ReviewNote</small>
+                                }
+                            </td>
+                        </tr>
+
+                        <!-- Modal Approve -->
+                        <div class="modal fade" id="approveModal-@req.RequestId" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content glass-card border-0">
+                                    <div class="modal-header bg-success text-white">
+                                        <h5 class="modal-header-title fw-bold">Phê Duyệt Đổi Phòng #@req.RequestId</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="post" asp-page-handler="Review">
+                                        <input type="hidden" name="RequestId" value="@req.RequestId" />
+                                        <input type="hidden" name="Approve" value="true" />
+                                        <div class="modal-body p-4 text-start">
+                                            <p>Xác nhận đồng ý phê duyệt đơn yêu cầu đổi phòng cho Giảng viên <strong>@req.Lecturer?.FullName</strong>?</p>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Ghi chú duyệt</label>
+                                                <input type="text" name="ReviewNote" placeholder="vd: Đã bố trí phòng trống..." class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer bg-light">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <button type="submit" class="btn btn-success">Xác Nhận Phê Duyệt</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Reject -->
+                        <div class="modal fade" id="rejectModal-@req.RequestId" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content glass-card border-0">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-header-title fw-bold">Từ Chối Yêu Cầu #@req.RequestId</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="post" asp-page-handler="Review">
+                                        <input type="hidden" name="RequestId" value="@req.RequestId" />
+                                        <input type="hidden" name="Approve" value="false" />
+                                        <div class="modal-body p-4 text-start">
+                                            <p>Nhập lý do từ chối yêu cầu đổi phòng này:</p>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Lý do từ chối <span class="text-danger">*</span></label>
+                                                <input type="text" name="ReviewNote" placeholder="vd: Phòng đã có lớp khác học..." class="form-control" required />
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer bg-light">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                            <button type="submit" class="btn btn-danger">Xác Nhận Từ Chối</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
