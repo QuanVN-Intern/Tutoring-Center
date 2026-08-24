@@ -36,12 +36,43 @@ namespace EduCenterManagement.Pages.Admin.Users
 
         public async Task OnGetAsync()
         {
-            Roles = await _context.Roles.ToListAsync();
+            // Only allow creating non-Admin roles (Admin is unique and fixed)
+            Roles = await _context.Roles.Where(r => r.RoleName != "Admin").ToListAsync();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            Roles = await _context.Roles.ToListAsync();
+            Roles = await _context.Roles.Where(r => r.RoleName != "Admin").ToListAsync();
+
+            var selectedRole = await _context.Roles.FindAsync(InputUser.RoleId);
+            if (selectedRole == null || selectedRole.RoleName == "Admin")
+            {
+                ModelState.AddModelError("InputUser.RoleId", "Không thể tạo tài khoản với vai trò Admin (Hệ thống chỉ có 1 Admin duy nhất)!");
+                return Page();
+            }
+
+            // Quota Check: Only 1 Grand Manager allowed
+            if (selectedRole.RoleName == "GrandManager")
+            {
+                bool grandManagerExists = await _context.Users.AnyAsync(u => u.Role!.RoleName == "GrandManager");
+                if (grandManagerExists)
+                {
+                    ModelState.AddModelError("InputUser.RoleId", "Hệ thống chỉ được phép có duy nhất 1 Grand Manager!");
+                    return Page();
+                }
+            }
+
+            // Quota Check: Max 1 Facility Manager per Facility
+            if (selectedRole.RoleName == "FacilityManager")
+            {
+                int facilityCount = await _context.Facilities.CountAsync();
+                int currentFmCount = await _context.Users.CountAsync(u => u.Role!.RoleName == "FacilityManager");
+                if (currentFmCount >= facilityCount)
+                {
+                    ModelState.AddModelError("InputUser.RoleId", $"Mỗi cơ sở chỉ có tối đa 1 Facility Manager (Hệ thống hiện đã đủ {currentFmCount}/{facilityCount} Facility Manager)!");
+                    return Page();
+                }
+            }
 
             if (await _context.Users.AnyAsync(u => u.Email.ToLower() == InputUser.Email.ToLower()))
             {
@@ -51,10 +82,10 @@ namespace EduCenterManagement.Pages.Admin.Users
 
             var newUser = new User
             {
-                FullName = InputUser.FullName,
-                Email = InputUser.Email,
+                FullName = InputUser.FullName.Trim(),
+                Email = InputUser.Email.Trim(),
                 PasswordHash = EduCenterContext.HashPassword(InputUser.Password),
-                PhoneNumber = InputUser.PhoneNumber,
+                PhoneNumber = InputUser.PhoneNumber?.Trim(),
                 RoleId = InputUser.RoleId,
                 IsActive = true,
                 CreatedAt = DateTime.Now
@@ -63,8 +94,8 @@ namespace EduCenterManagement.Pages.Admin.Users
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
-            _auditLogger.LogActivity(User.Identity?.Name ?? "Admin", "CREATE_USER", $"Tạo mới tài khoản {newUser.Email} vai trò RoleId #{newUser.RoleId}");
-            TempData["SuccessMessage"] = $"Đã thêm mới tài khoản {newUser.FullName} thành công!";
+            _auditLogger.LogActivity(User.Identity?.Name ?? "Admin", "CREATE_USER", $"Tạo mới tài khoản {newUser.Email} vai trò {selectedRole.RoleName}");
+            TempData["SuccessMessage"] = $"Đã thêm mới tài khoản {newUser.FullName} ({selectedRole.RoleName}) thành công!";
 
             return RedirectToPage("/Admin/Users/Index");
         }

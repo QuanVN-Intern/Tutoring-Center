@@ -11,6 +11,7 @@
 
             <form method="post">
                 <input type="hidden" asp-for="InputUser.UserId" />
+                <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Họ và Tên <span class="text-danger">*</span></label>
@@ -34,17 +35,40 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Vai Trò (Role) <span class="text-danger">*</span></label>
-                    <select asp-for="InputUser.RoleId" class="form-select" required>
-                        @foreach (var role in Model.Roles)
-                        {
-                            <option value="@role.RoleId">@role.RoleName</option>
-                        }
-                    </select>
+                    @if (Model.CurrentRoleName == "Admin")
+                    {
+                        <input type="hidden" asp-for="InputUser.RoleId" />
+                        <input type="text" class="form-control bg-light fw-bold text-danger" value="Admin (Cố định - Không thể thay đổi)" readonly />
+                    }
+                    else if (Model.CurrentRoleName == "Student")
+                    {
+                        <input type="hidden" asp-for="InputUser.RoleId" />
+                        <input type="text" class="form-control bg-light fw-bold text-info" value="Student (Học viên - Cố định không chuyển vai trò)" readonly />
+                    }
+                    else
+                    {
+                        <select asp-for="InputUser.RoleId" class="form-select" required>
+                            @foreach (var role in Model.Roles)
+                            {
+                                <option value="@role.RoleId">@role.RoleName</option>
+                            }
+                        </select>
+                        <small class="text-muted d-block mt-1"><i class="bi bi-info-circle me-1"></i>Chỉ có thể điều chuyển giữa Giảng viên, Facility Manager và Grand Manager.</small>
+                    }
                 </div>
 
                 <div class="mb-4 form-check form-switch">
-                    <input asp-for="InputUser.IsActive" class="form-check-input" type="checkbox" role="switch" id="activeSwitch">
-                    <label class="form-check-label fw-semibold" for="activeSwitch">Kích hoạt tài khoản</label>
+                    @if (Model.CurrentRoleName == "Admin")
+                    {
+                        <input asp-for="InputUser.IsActive" class="form-check-input" type="checkbox" role="switch" id="activeSwitch" checked disabled>
+                        <input type="hidden" asp-for="InputUser.IsActive" value="true" />
+                        <label class="form-check-label fw-semibold text-muted" for="activeSwitch">Tài khoản Admin luôn ở trạng thái hoạt động</label>
+                    }
+                    else
+                    {
+                        <input asp-for="InputUser.IsActive" class="form-check-input" type="checkbox" role="switch" id="activeSwitch">
+                        <label class="form-check-label fw-semibold" for="activeSwitch">Kích hoạt tài khoản</label>
+                    }
                 </div>
 
                 <div class="d-flex justify-content-between">

@@ -10,6 +10,7 @@
             <h4 class="fw-bold text-primary mb-3"><i class="bi bi-person-plus-fill me-2"></i>Thêm Tài Khoản Mới</h4>
 
             <form method="post">
+                <div asp-validation-summary="All" class="text-danger small mb-3"></div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Họ và Tên <span class="text-danger">*</span></label>
                     <input asp-for="InputUser.FullName" class="form-control" placeholder="vd: Nguyễn Văn A" required />
