@@ -255,6 +255,39 @@ namespace EduCenterManagement.Data
                 ("Học Viên Lê Văn C", "student.c@educenter.local", studentRole, "0905555557")
             };
 
+            // 10 Lecturers across different subjects
+            var lecturerNames = new[]
+            {
+                "Thầy Nguyễn Văn Toán", "Cô Trần Thị Văn", "Thầy Lê Văn Lý",
+                "Cô Phạm Thị Hóa", "Thầy Hoàng Văn Anh", "Cô Vũ Thị Sinh",
+                "Thầy Đặng Văn Sử", "Cô Bùi Thị Địa", "Thầy Ngô Văn Tin", "Cô Đỗ Thị GDCD"
+            };
+            for (int i = 0; i < lecturerNames.Length; i++)
+            {
+                requiredDemoUsers.Add((
+                    lecturerNames[i],
+                    $"lecturer{(i + 1):D2}@educenter.local",
+                    lecturerRole,
+                    $"09040000{(i + 1):D2}"
+                ));
+            }
+
+            // 60 Students with varied Vietnamese names
+            string[] lastNames = { "Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ", "Võ", "Đặng", "Bùi", "Đỗ" };
+            string[] middleNames = { "Văn", "Thị", "Hữu", "Đức", "Minh", "Thanh", "Ngọc", "Quang" };
+            string[] firstNames = { "An", "Bình", "Cường", "Dũng", "Em", "Phúc", "Giang", "Hải", "Khánh", "Linh", "Nam", "Phát", "Quân", "Sơn", "Tâm", "Tùng", "Uyên", "Việt", "Xuân", "Yến" };
+
+            for (int i = 1; i <= 60; i++)
+            {
+                string fullName = $"{lastNames[(i - 1) % lastNames.Length]} {middleNames[(i - 1) % middleNames.Length]} {firstNames[(i - 1) % firstNames.Length]} {i}";
+                requiredDemoUsers.Add((
+                    fullName,
+                    $"student{i:D2}@educenter.local",
+                    studentRole,
+                    $"09050000{i:D2}"
+                ));
+            }
+
             foreach (var item in requiredDemoUsers)
             {
                 var existingUser = Users.FirstOrDefault(u => u.Email.ToLower() == item.Email.ToLower());

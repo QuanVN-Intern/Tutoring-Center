@@ -50,8 +50,14 @@ namespace EduCenterManagement.Pages.Admin.Users
 
         public async Task<IActionResult> OnPostToggleLockAsync(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.UserId == id);
             if (user == null) return NotFound();
+
+            if (user.Role?.RoleName == "Admin")
+            {
+                TempData["ErrorMessage"] = "Không thể khóa tài khoản Admin duy nhất của hệ thống!";
+                return RedirectToPage();
+            }
 
             user.IsActive = !user.IsActive;
             user.UpdatedAt = DateTime.Now;
